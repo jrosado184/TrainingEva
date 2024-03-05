@@ -1,21 +1,22 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
-from pymongo import MongoClient
-from routes.employee_routes import init_employee_routes
+from flask_pymongo import PyMongo
+from routes.employee_routes import init_employee_routes_blueprint
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
+def create_app():
+    app = Flask(__name__)
+    app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 
-app = Flask(__name__)
-app.config["MONGO_URI"] = MONGO_URI
+    mongo = PyMongo(app)
+    app.mongo = mongo
 
-client = MongoClient(MONGO_URI)
-db = client["development"]
-employees = db["employees"]
+    init_employee_routes_blueprint(app)
 
-init_employee_routes(app, employees)
+    return app
 
 if __name__ == "__main__":
+    app = create_app()
     app.run(debug=True)
